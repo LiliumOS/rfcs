@@ -2,7 +2,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use mdbook::BookItem;
-use mdbook::book::Chapter;
+use mdbook::book::{Chapter, SectionNumber};
 use mdbook::preprocess::CmdPreprocessor;
 use pulldown_cmark::{CowStr, Event, HeadingLevel, Tag, TagEnd};
 
@@ -11,6 +11,7 @@ fn push_chapter<'a>(
     base: &Path,
     p: PathBuf,
     link: &str,
+    num: SectionNumber,
     parents: &[String],
 ) -> io::Result<impl Iterator<Item = Event<'static>>> {
     let mut content = std::fs::read_to_string(base)?;
@@ -38,7 +39,7 @@ fn push_chapter<'a>(
     let ch = Chapter {
         name: title,
         content,
-        number: None,
+        number: Some(num),
         sub_items: Vec::new(),
         path: Some(p.clone()),
         source_path: Some(p.clone()),
@@ -112,7 +113,11 @@ fn main() -> io::Result<()> {
     )
     .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
-    for item in std::fs::read_dir(&root)? {
+    let section = vec![1];
+
+    for (item, n) in std::fs::read_dir(&root)?.zip(1..) {
+        let mut section = section.clone();
+        section.push(n);
         let item = item?;
         let base_path = item.path();
         let link = base_path
@@ -128,7 +133,14 @@ fn main() -> io::Result<()> {
             .to_path_buf();
 
         state = pulldown_cmark_to_cmark::cmark_resume(
-            push_chapter(&mut subchapters, &base_path, mdbook_path, link, &parent)?,
+            push_chapter(
+                &mut subchapters,
+                &base_path,
+                mdbook_path,
+                link,
+                SectionNumber(section),
+                &parent,
+            )?,
             &mut index_file,
             Some(state),
         )
@@ -151,7 +163,7 @@ fn main() -> io::Result<()> {
     let index_ch = Chapter {
         name: String::from("RFCs Index"),
         content: index_file,
-        number: None,
+        number: Some(SectionNumber(section)),
         sub_items: subchapters,
         path: Some(path),
         source_path: None,
