@@ -55,8 +55,11 @@ Provide an informative explanation of any future possibilities.
 
 ### Normative References
 
-<!--List all documents cited normatively here. A Normative Reference is a reference within the main text (Normative Text section, Security Considerations, or -->
+<!--List all documents cited normatively here. 
+A Normative Reference is a reference within the main text (Normative Text section, Security Considerations, or Registry Impacts) for the meaningful content within.
+For example, if you use definitions from another specification, it would be a normative reference.
+-->
 
 ### Informative References
 
-<!--Include any documents cited-->
+<!--Include any documents cited to provide informative context only-->
