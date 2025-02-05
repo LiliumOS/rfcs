@@ -8,20 +8,15 @@ title = "Fiction Template"
 [preprocessor.links]
 
 [preprocessor.add-copyright]
-exclude=["COPYRIGHT.md"]
+exclude = ["COPYRIGHT.md"]
 
-[preprocessor.add-copyright.epub-fancy]
-include=[]
-
+[preprocessor.rfc-summaries]
+command = "cargo run --manifest-path mdbook-rfc-summaries/Cargo.toml --"
+before = ["links", "add-copyright"]
 
 [output.markdown]
 
 [output.html]
 
-
-[output.epub-fancy]
-optional=true
-output=["part","full"]
-always-include=["COPYRIGHT.md","COPYRIGHT-STUB.md"]
-
-[output.epub-fancy.file-ids]
+[build]
+extra-watch-dirs = ["mdbook-rfc-summaries/src"]

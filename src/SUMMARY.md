@@ -1,6 +1,9 @@
 # Summary
 
-- [Chapter 1](./chapter_1.md)
+- [Copyright](./COPYRIGHT.md)
+
+# RFCs {#rfc-index}
+
 
 ---
 
