@@ -74,7 +74,7 @@ Additionally, an RFC should specify the following, as applicable:
 
 Each RFC is provided under a unified license. Everyone who submits an RFC must permit the ACI Project to license the RFC under the unified license. 
 
-The License for RFCs is currently (BIKESHED) and requires an RFC to change. 
+The License for RFCs is currently [`CC-BY-4.0`] and requires an RFC to change. 
 
 The RFC License shall always be an Open Documentation License.
 
@@ -94,3 +94,10 @@ There are no security considerations for this RFC, as it strictly defines a poli
 * The Policy also Leaves Open how to modify RFCs for non-technical reasons (such as for editorial purposes),
 * While Copyright is addressed by the Policy, Patent considerations are currently omitted. This may need to be addressed at some point in the future,
 * Finally, the policy requires RFCs to be approved by the Lilium Project Leads. In the future a proper team may be chartered for this purpose, and certain kinds of RFCs may be delegated to other such teams.
+
+## Normative References
+
+- [`CC-BY-4.0`] - Copyright License by Creative Commons Team
+
+
+[`CC-BY-4.0`]: <https://creativecommons.org/licenses/by/4.0/legalcode.en>

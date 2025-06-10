@@ -1,6 +1,7 @@
 # Summary
 
 - [Copyright](./COPYRIGHT.md)
+- [Contributors](./CONTRIBUTORS.md)
 
 # RFCs {#rfc-index}
 
