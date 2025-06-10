@@ -10,7 +10,7 @@ A Community Oriented Process for creating and evolving the Lilium OS is desirabl
 
 ## Informative Explanation
 
-The RFC Process is the mechanism for evolution of the ACI Specification. Throughout the lifecycle of the project, documents, known as Requests for Comments or RFCs will be published for review, comment, and consensus. These documents are used to change and evolve the ACI Specification itself, a project-level policy, or other major portions of the ACI Specification Project.
+The RFC Process is the mechanism for evolution of the Lilium OS. Throughout the lifecycle of the project, documents, known as Requests for Comments or RFCs will be published for review, comment, and consensus. These documents are used to change and evolve the Lilium OS Interfaces itself, a project-level policy, or other major portions of the Lilium OS Project.
 
 While an RFC is "Live", it is open to public review comment, not restricted to members of the project or Core Interest Groups. Likewise, anyone may open an RFC to public comment, subject to policies regarding contributions. After comment, the Lilium Leads, approve or reject the RFC, which is followed by a period for final comment, where outstanding concerns can be raised and addressed.
 
