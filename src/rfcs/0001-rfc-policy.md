@@ -83,6 +83,11 @@ If this assement is incorrect, such API signatures are also released under the t
 
 The RFC License shall always be an Open Documentation License.
 
+### RFC Template
+
+An RFC Template shall be provided to aid in the authoring of RFCs. The template shall provide sections for the elements of an RFC set forth in the Content section. Use of the template is not required for an RFC, however.
+Modifying the template is not an RFC of its own.
+
 ## Security Considerations
 
 There are no security considerations for this RFC, as it strictly defines a policy of the Project.
