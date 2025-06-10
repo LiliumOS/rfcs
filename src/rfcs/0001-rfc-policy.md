@@ -41,6 +41,21 @@ And RFC is not required for the following:
 * To create a new experimental standard subsystem or implement them in either the kernel or winter-lily,
 * To create extension or non-standard subsystems.
 
+### Lifecycle of an RFC
+
+The following is the Lifecycle of every RFC
+
+0. Pre-Review (Optional): The RFC is brought for informal review and drafting, in an incomplete (or Pre-RFC) form designed for drafting and initial design,
+1. Submission: The RFC is submitted to <http://github.com/LiliumOS/rfcs> as a Pull Request. Generally, the RFC must contain the content set forth in the [content](#content) section,
+2. Review and Iteration: The Pull Request is reviewed and discussed, with appropriate concerns, design questions, proposed design changes, and appropriate changes are made to address these concerns, 
+3. Approval: Once the RFC is reviewed appropriately the Lilium Leads must approve for it to be merged. Approval represents consensus to adopt the RFC.
+4. Final Comment Period: After approval the RFC must undergo a 7 day final comment period. Approval may be revoked at any point by any Lead.
+4. RFC Number Assignment: The RFC is assigned a number based on its PR Number and the document is renamed accordingly.
+
+An RFC may be explicitly closed also by request of all of the Core Interest Groups - this indicates that there is consensus not to move forward at the current time. A Closed RFC may be reopened or refiled in the future.
+
+After approval and the final comment period, any member of the Project may perform the RFC Number Assignment (if the Number was not previously assigned) and merge the RFC.
+
 ### Content
 
 Generally, an RFC must contain at least the following:
@@ -54,6 +69,14 @@ Additionally, an RFC should specify the following, as applicable:
 * Any Considerations on the System Call or Userspace Application Binary Interface,
 * A description of Prior Art that informed the proposal,
 * A description of Future Changes and Directions that can be made in respect to the RFC.
+
+### Copyright Licenses and Notices
+
+Each RFC is provided under a unified license. Everyone who submits an RFC must permit the ACI Project to license the RFC under the unified license. 
+
+The License for RFCs is currently (BIKESHED) and requires an RFC to change. 
+
+The RFC License shall always be an Open Documentation License.
 
 ## Security Considerations
 
