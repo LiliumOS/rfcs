@@ -1,10 +1,16 @@
 # Summary
 
-- [Copyright](./COPYRIGHT.md)
-- [Contributors](./CONTRIBUTORS.md)
+
+
 
 # RFCs {#rfc-index}
 
+
+# Copyright 
+
+- [CC-BY](./CC-BY.md)
+- [MIT](./MIT.md)
+- [Contributors](./CONTRIBUTORS.md)
 
 ---
 

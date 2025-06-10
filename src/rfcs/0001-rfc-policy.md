@@ -77,6 +77,10 @@ Each RFC is provided under a unified license. Everyone who submits an RFC must p
 The License for RFCs is currently [`CC-BY-4.0`] and requires an RFC to change. 
 Such a change applies to previous RFCs as well as future RFCs, though previous RFCs will remain available under the previous license as well.
 
+Any Code submitted in an RFC is subject to the MIT License. This include examples and snipets. 
+API Definitions are deemed by the Project to not be subject to copyright, due to their inherent functionality, 
+If this assement is incorrect, such API signatures are also released under the terms of the MIT License.
+
 The RFC License shall always be an Open Documentation License.
 
 ## Security Considerations
