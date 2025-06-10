@@ -72,9 +72,10 @@ Additionally, an RFC should specify the following, as applicable:
 
 ### Copyright Licenses and Notices
 
-Each RFC is provided under a unified license. Everyone who submits an RFC must permit the ACI Project to license the RFC under the unified license. 
+Each RFC is provided under a unified license. Everyone who submits an RFC must permit the Lilium OS Project to license the RFC under the unified license in force at the time. 
 
 The License for RFCs is currently [`CC-BY-4.0`] and requires an RFC to change. 
+Such a change applies to previous RFCs as well as future RFCs, though previous RFCs will remain available under the previous license as well.
 
 The RFC License shall always be an Open Documentation License.
 
