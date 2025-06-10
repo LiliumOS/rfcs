@@ -1,4 +1,4 @@
-# RFC Template
+# RFC Policy
 
 ## Summary
 
