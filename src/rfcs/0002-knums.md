@@ -79,7 +79,8 @@ ascii-ident-begin := %x41-5A / %x61-7A / "_"
 
 ascii-ident-continue := <ascii-ident-begin> / %x30-39
 
-direcitve := "%" <ascii-ident-begin> *<ascii-ident-continue> <newline>
+direcitve := "%" <ascii-ident-begin> *<ascii-ident-continue> 
+    ; Must only be followed by `<White_Space>` or `<comment>` before first `<newline>`
 
 token := <int-literal> / <uuid> / <punct> / <keyword> / <ident> / <doc-comment> / <inner-doc-comment> / <directive>
 ```
@@ -93,7 +94,8 @@ The following conventions are used above:
 
 ### Syntatic Grammar
 
-The following ABNF defines the syntatic grammar:
+The following ABNF defines the syntactic grammar:
+
 ```abnf
 
 file := *<inner-doc-comment> *<bare-item>
@@ -116,7 +118,7 @@ item-sysfn := "fn" <ident> <fn-signature> "=" <expr> ";"
 
 item-const := "const" <ident> ":" <type> "=" <expr> ";"
 
-item-use := "use" <path> ";"
+item-use := ["inline"] "use" <path> ";"
 
 path := <ident> / <path> "::" <ident>
 
@@ -148,8 +150,8 @@ binary-expr := <expr> <binary-op> <expr>
 
 ; Precedence Order is 
 ; High: `<<`, `>>`
-; ...: `&`, `|`, `^`
-; ...: `/`, `*`
+;  | : `&`, `|`, `^`
+;  v : `/`, `*`
 ; Low: `+`, `-`
 binary-op := "<<" / ">>" / "&" / "|" / "^" / "/" / "*" / "+" / "-"
 
@@ -163,6 +165,34 @@ literal-expr := <int-literal> / <uuid>
 The following conventions are used:
 * All productions defined in the lexical grammar, other than the `file` production, may be referred to by the syntatic grammar and match the same token produced by that grammar
 * The contents of the file must match the `<file>` production after stripping all whitespace and comments (other than doc comments and inner doc comments)
+
+### Items
+
+Each file is a collection of items, that represent the public api of the system. There are 6 kinds of items:
+* Directives
+* Use Definitions
+* `const` items
+* `fn` items
+* `struct` and `union` items
+* `type` aliases.
+
+#### Directives
+
+A directive is a `%` prefixed ascii identifier. It must appear on its own line and have nothing other than whitespace preceeding or following it before a newline.
+
+A directive is a command to the processor tool, it does not form part of the public API. 
+
+#### Use Definitions
+
+An item introduced by the `use` keyword specifies a path (a sequence of identifiers separated by `::`). A `use` item makes the definitions in the specified path available for definitions in the current file (See below for the rules for how to find the path of a given file).
+
+Before the `use` keyword, the `inline` contextual keyword may be present. If the `inline` keyword is present, the `use` item is part of the public api of the file, and the items of that file are accessible from any file that imports the current file. Otherwise, the items made available by the `use` item are not guaranteed to be available outside of the current file.
+
+#### `const` items
+
+A `const` item defines an important named constant of a specified type. 
+
+#### `fn` items
 
 ## Security Considerations
 
