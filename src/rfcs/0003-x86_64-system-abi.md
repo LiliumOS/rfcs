@@ -2,7 +2,7 @@
 
 ## Summary
 
-The Interaction with the Lilium System Calls and userspace libraries has both an API and an ABI. This document describes the specific 
+The Interaction with the Lilium System Calls and userspace libraries has both an API and an ABI. This document describes the ABI of those parts of Lilium on x86_64 specifically.
 
 ## Motivation
 
