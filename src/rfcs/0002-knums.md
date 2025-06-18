@@ -194,6 +194,88 @@ A `const` item defines an important named constant of a specified type.
 
 #### `fn` items
 
+An `fn` item defines a system function with a specified signature. It has an expression that represents the system function number within the subsystem it belongs to.
+
+An `fn` item's signature contains a number of parameters (at least 0) which have a type other than `void`, `!`,  or an array type. Parameters also have a name which are informative to users and documentation readers. It also has a return type which is a type other than an array type.
+
+#### `struct`/`union` items
+
+A struct item is introduced by the `struct` keyword, and a union item by the `union` keyword. Both introduce new named types. 
+
+Both types have a body which can be either a braced struct body, or for `struct` types only an `opaque` body. Prior to the body, a number of attributes
+
+A braced struct body contains a number of fields, which have a name and a type. The fields must be initialized to a value of the type. The body may end with the keyword `pad` which contains a type. The type must be an integer type or an array of an integer type. Such a keyword indicates that the type is extended as though by a field of such a type, which must be initialized to `0`.
+
+An opaque body optionally specifies a type field in parenthesis. The type provides a hint about a base type. It shall be valid to cast between pointer types to the base type and the derived type. 
+Opaque types cannot be constructed, and may not appear directly in signatures, const items, or `struct` fields.
+
+##### Struct attributes
+
+Prior to the body, one or more attributes may be specified. Attributes are of the form `<ident>(<expr>)`. 
+
+The following attributes are currently recognized:
+* `align(N)`, `N` must an expression of type `ulong`, and must be a power of two. Indicates that the type requires alignment to at least `N` bytes.
+* `option(ID)`. Inserts a field at the start of the structure type `ExtendedOptionHead` (The file `types::option` must be `use`d to use this struct attribute), and provides sufficient definitions. Must appear on a `struct`. 
+* `option_head(N)`: Must appear on a `union`. Inserts a field of an unnamed struct type, containing a field of type `ExtendedOptionHead` (the file `types::option` must be `use`d to use this attribute), and a field of type `[byte; N]`.
+
+#### `type` items
+
+A `type` item introduces a named alias for a specified type.
+
+### Types
+
+#### Integer types 
+
+The types `uN` and `iN` are integer types (valid only for N=`8`, `16`, `32`, `64`, `128`, and `long`, all others integer values for `N` are reserved identifiers for type names).
+
+An integer type `uN` represents a N-bit unsigned integer type with values in `[0, 2^N)`. An integer type `iN` represents an N-bit signed twos-complement integer type with values in `[2^(N-1), 2^(N-12))`. 
+
+The type `ulong` and `ilong` represent integer types that have the same width as a pointer on the current platform. It has the same range and representation as the equivalent `uN` or `iN` type, but is a distinct type. 
+
+To use an integer type, the file `types::int` must be `use`d. 
+
+#### `byte` type
+
+The type `byte` is a byte type. It has the same width as `u8` and can be initialized from values of type `u8`. `byte` may also contain uninitialized values.
+
+#### `char` type
+
+The type `char` is a character type. It has the same width and representation as `u8`, but is a distinct type.
+
+#### Named types
+
+Any identifier may be used as a type. The identifier is only valid in the type position if it refers to a `struct`, `union`, or `type` item in scope, or if it refers to the name of a generic parameter for a containing `struct.
+
+Identifiers of the form `uN`, `iN` (`N` is an integer value), `ulong`, `ilong`, `byte`, `char`, and `void` do not resolve to named types and instead resolve to the specified type.
+
+Named types may be followed by either a generic-arg-list or a replacement type. 
+
+#### `void` type
+
+The type `void` is the void type. It may only appear in return types of function definitions or function pointers. It represents an empty return from a function
+
+#### Array types
+
+An array type is of the form `[<elem>; <len>]` where `elem` is the element type and `len` is the length of the array, an expression of type . The array is layed out with the elements contiguous in memory.
+
+Array types cannot appear in parameters or return types directly.
+
+#### Pointer types
+
+A pointer type is of the form `*<kind> <pointee>` where pointee is the pointee type and `kind` is one of the following keywords: `mut`, `const`, `handle`, or `shared_handle`.
+
+`mut` and `const` represents userspace pointers to mutable or immutable data respectively. 
+
+`handle` and `shared_handle` represents pointers to kernel objects. `shared_handle` represents a pointer to an explicitly shared resource.
+
+`handle` and `shared_handle` pointers may only be used if the `types::hdl` module is `use`d. 
+
+Pointers may be to any type, including arrays, `void`, `!`, or `opaque` structs. Such pointers can appear in any position.
+
+#### Function Pointer Types
+
+A function pointer type is introduced by the `fn` keyword, and is followed by a function signature (like for an `fn` item)
+
 ## Security Considerations
 
 None
@@ -206,20 +288,15 @@ Note that the fact that the ABI of an interface only depends on the aforemention
 
 ## Prior Art
 
-## Future Direction
+## Future Directions
 
-<!--
-Provide an informative explanation of any future possibilities.
--->
+* Userspace function `fn` items
+    * Defining USI items
+* Additional items, expressions, and types may be introduced
 
 ## References
 
 ### Normative References
 
 * [Unicode 16.0](https://www.unicode.org/versions/Unicode16.0.0/)
-
-
-### Informative References
-
-<!--Include any documents cited to provide informative context only-->
 
