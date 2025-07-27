@@ -33,7 +33,7 @@ Regardless of whether `argc` is defined as `int` or `long`, it will contain the 
 
 ### System Call ABI
 
-The System Call ABI uses a modify form of the calling convention from the [x86-64 psABI]. It uses the same type layouts as the Userspace ABI.
+The System Call ABI uses a modified form of the calling convention from the [x86-64 psABI]. It uses the same type layouts as the Userspace ABI.
 
 System Calls (defined by the kernel) are invoked by the `syscall` instruction. The system function number 
 
@@ -45,7 +45,7 @@ The following changes apply:
     * If the function returns `SysResult2<T>` (`T` must be up to 8 bytes in size, and have class INTEGER), `rax` contains the error or `0` if successful, and `rdx` contains the value if successful (`rdx` is undefined if `rax` contains an error)
     * If the function returns any other type, that type must be at most one eightbyte and have class INTEGER. The value is in `rax` and `rdx` is undefined.
 * There may be at most 6 eightbytes of parameters, each of either class MEMORY or INTEGER
-* The fourth INTEGER eightbyte for parameters (including pointers for MEMORY types) is passed in `r10`, not in `rcx`. If the system function uses fewer than 4 eightbytes, `r10` is not used for the `syscall` (caller saved/volatile).
+* The fourth INTEGER eightbyte for parameters (including pointers for MEMORY types) is passed in `r10`, not in `rcx` (`rcx` stores the return address after a `syscall` instruction). If the system function uses fewer than 4 eightbytes, `r10` is not used for the `syscall` (caller saved/volatile).
 * Varargs are not supported.
 
 #### System Function Number and Error Numbers
