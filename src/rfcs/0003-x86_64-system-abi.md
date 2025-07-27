@@ -43,7 +43,7 @@ The following changes apply:
     * If the function returns `void`, both `rax` and `rdx` are undefined
     * If the function returns `SysResult`, `rax` contains the return value - the negative error number on error, positive or `0` if succesful, `rdx` is undefined.
     * If the function returns `SysResult2<T>` (`T` must be up to 8 bytes in size, and have class INTEGER), `rax` contains the error or `0` if successful, and `rdx` contains the value if successful (`rdx` is undefined if `rax` contains an error)
-    * If the function returns any other type, that type must be at most one eightbyte and have class INTEGER. The value is in `rax` and `rdx` is undefined.
+    * If the function returns any other type, that type must be at most one eightbyte and have class INTEGER. The value is in `rax`, and `rdx` is undefined.
 * There may be at most 6 eightbytes of parameters, each of either class MEMORY or INTEGER
 * The fourth INTEGER eightbyte for parameters (including pointers for MEMORY types) is passed in `r10`, not in `rcx` (`rcx` stores the return address after a `syscall` instruction). If the system function uses fewer than 4 eightbytes, `r10` is not used for the `syscall` (caller saved/volatile).
 * Varargs are not supported.
