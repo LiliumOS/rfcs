@@ -274,7 +274,9 @@ Pointers may be to any type, including arrays, `void`, `!`, or `opaque` structs.
 
 #### Function Pointer Types
 
-A function pointer type is introduced by the `fn` keyword, and is followed by a function signature (like for an `fn` item)
+A function pointer type is introduced by the `fn` keyword, and is followed by a function signature (like for an `fn` item).
+
+Function pointers can accept any function defined in userspace with the specified signature. 
 
 ## Security Considerations
 
