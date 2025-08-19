@@ -228,7 +228,7 @@ A `type` item introduces a named alias for a specified type.
 
 The types `uN` and `iN` are integer types (valid only for N=`8`, `16`, `32`, `64`, `128`, and `long`, all others integer values for `N` are reserved identifiers for type names).
 
-An integer type `uN` represents a N-bit unsigned integer type with values in `[0, 2^N)`. An integer type `iN` represents an N-bit signed twos-complement integer type with values in `[2^(N-1), 2^(N-12))`. 
+An integer type `uN` represents a N-bit unsigned integer type with values in `[0, 2^N)`. An integer type `iN` represents an N-bit signed twos-complement integer type with values in `[2^(N-1), 2^(N-1))`. 
 
 The type `ulong` and `ilong` represent integer types that have the same width as a pointer on the current platform. It has the same range and representation as the equivalent `uN` or `iN` type, but is a distinct type. 
 
@@ -248,7 +248,7 @@ Any identifier may be used as a type. The identifier is only valid in the type p
 
 Identifiers of the form `uN`, `iN` (`N` is an integer value), `ulong`, `ilong`, `byte`, `char`, and `void` do not resolve to named types and instead resolve to the specified type.
 
-Named types may be followed by either a generic-arg-list or a replacement type. 
+Named types may be followed by either a generic-arg-list or a replacement type. A replacement type is a hint to the type of pointee to use in a polymorphic context. Note that `uN` and `iN` match even for invalid widths of integer type.
 
 #### `void` type
 
