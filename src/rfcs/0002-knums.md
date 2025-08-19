@@ -65,11 +65,11 @@ hex-digit := <digit> / %x41-46 / %x61-66
 
 uuid := "U{" 8<hex-digit> "-" 4<hex-digit> "-" 4<hex-digit> "-" 4<hex-digit> "-" 12<hex-digit> "}
 
-hex-literal = "0" ("x" / "X") 1*(<hex-digit> / "_")
+hex-literal = "0" ("x" / "X") *(<hex-digit> ["_"]) <hex-digit>
 
-dec-literal = <digit> *(<digit> / "_")
+dec-literal = *(<digit> ["_"]) <digit>
 
-oct-literal = "0 ("o" / "O") 1*(<octal-digit> / "_")
+oct-literal = "0 ("o" / "O") *(<octal-digit> ["_"]) <octal-digit>
 
 int-literal = <hex-literal> / <dec-literal> / <oct-literal>
 
@@ -144,7 +144,7 @@ generic-list := "<" [<type> *("," <type>) ","] ">"
 
 alternate := "!" <type>
 
-expr := <literal-expr> / <ident> / <unary-expr> / <non-binary-expr>
+expr := <literal-expr> / <ident> / <unary-expr> / <binary-expr>
 
 binary-expr := <expr> <binary-op> <expr>
 
@@ -153,6 +153,7 @@ binary-expr := <expr> <binary-op> <expr>
 ;  | : `&`, `|`, `^`
 ;  v : `/`, `*`
 ; Low: `+`, `-`
+; All operators are left-associative.
 binary-op := "<<" / ">>" / "&" / "|" / "^" / "/" / "*" / "+" / "-"
 
 unary-expr := <unary-op> <expr>
@@ -278,15 +279,58 @@ A function pointer type is introduced by the `fn` keyword, and is followed by a 
 
 Function pointers can accept any function defined in userspace with the specified signature. 
 
+### Expressions
+
+Expressions are complex forms that denote values. In the knums language, expressions are constants, which means they can be computed at compile time. 
+
+#### Literal Expression
+
+A Literal expressions is an integer literal or a UUID. 
+An integer literal can be written in decimal, in hexadecimal prefixed by `0x`, or in octal prefixed by `0o`. Digits may be separated by `_`. Decimal literals may have leading 0 digits. 
+
+A UUID literal starts with `U` and is immediately followed by a braced UUID. Dashes in the UUID may be omitted. 
+
+#### Named Expressions
+
+A `const` item in scope may be named by an expression. The value of the expression is the value of the const. The const value is evaluated before being substituted - in particular, the substituted expression is not reparsed.
+
+Special constant values are always in scope:
+* `__LILIUM_SIZEOF_POINTER__` is defined to be the number of bytes in a pointer, a power of 2 that is at least 4
+* Constants that begin with `__LILIUM` are reserved for future definitions.
+
+#### Unary Operator Expressions
+
+Unary Operators may prefix an expression with an integer type. `-` is a value-wise negation of the value mod 2^N. `!` is a bitwise negation. `+` is an identity operation.
+
+#### Binary Operator Expressions
+
+Binary Operators may apply to two expressions with an intege type.
+
+* `+` is addition,
+* `-` is subtraction,
+* `*` is multiplication,
+* `/` is division,
+* `&` is bitwise and,
+* `|` is bitwise or,
+* `^` is bitwise xor,
+* `<<` is bitwise left shift,
+* `>>` is bitwise right shift.
+
+When multiple binary operators are chained, we associate them by precedence first, then group from left to right. 
+
+#### Parenthesis
+
+Parenthesis may surround an expression. This provides explicit grouping for the expression.
+
 ## Security Considerations
 
 None
 
 ## ABI Considerations
 
-The knum language allows interfaces to be described as to their language API. When combined with a future RFC defining the system calling conventions and layout definitions, this is sufficient to know the complete ABI of these interfaces as well. This RFC does not define those conventions 
+The knums language allows interfaces to be described as to their language API. When combined with a future RFC defining the system calling conventions and layout definitions, this is sufficient to know the complete ABI of these interfaces as well. This RFC does not define those conventions 
 
-Note that the fact that the ABI of an interface only depends on the aforementioned calling convention RFC, and its knum API, it follows that 
+Note that the fact that the ABI of an interface only depends on the aforementioned calling convention RFC, and its knum API, it follows that every interface defined by a knum spec has a consistent ABI on each platform.
 
 ## Prior Art
 
