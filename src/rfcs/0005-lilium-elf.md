@@ -1,4 +1,4 @@
-# RFC Template
+# Lilium ELF OS ABI
 
 ## Summary
 
@@ -6,29 +6,33 @@ Lilium uses an extended version of the ELF format for both userspace executables
 
 ## Motivation
 
-The Lilium OS requires an executable format for executing 
+The Lilium OS requires an executable format for defining executable programs, as well as shared objects for dynamic linking. The Generic ABI prescribed by SCO Group does not provide the full set of features necessary for all Lilium programs.
 
 ## Informative Explanation
 
-<!--Provide an informative explanation of proposal. 
-This is intended to be read by someone who wishes to understand the proposal but may not have advanced technical background.
-This section is intended for:
-* People using the Lilium Operating System as a Software Developer
-* People looking to understand the Lilium Operating System
-* People looking to understand the Lilium Project as a whole
+The ELF Specification is described by three seperate documents: The [generic-abi] which defines the ELF File Format itself, a psABI, which is architecture specific, and an OS ABI. 
+For Lilium, the OS ABI consists of a number of extensions to the ELF Specification, including normally required parts of the generic-abi being made optional, and some restrictions.
 
-This section is not normative-->
+When an ELF File is used for loading, the program header defines the segments of memory image. When used for (static) linking, the section headers define the sections of the file. 
+Additional features for both sections and segments are provided. 
+Several features are defined for compatibility with GNU and LLVM toolchains.
+
+### Write/Execute Memory
+
+Lilium restricts the creation of writable and executable segments for security reasons. For this reason, ELF Loaders on Lilium deny the use of Write/Exec segments 
 
 ## Normative Text
 
 ### Executable/Linkable Format
 
-Executable Files and Shared Object modules on Lilium are defined by the [generic-abi], with extensions defined as below.
+Executable Files and Shared Object modules on Lilium are defined by the [generic-abi], with extensions defined below.
 
 ### OS ABI
 
 Lilium supports the use of `OSABI_SYSV` (0) and `OSABI_LILIUM` (TODO) ELF Files. Both are treated identically if 
 `OSABI_LILIUM` should be preferred if the binary contains any of the extensions used herein, except that for compatibility with the GNU and LLVM toolchains, the use of `DT_GNU_HASH` together with `DT_HASH` is supported on `OSABI_SYSV`, as is the use of `PT_GNU_STACK`.
+
+In the current version, if `OSABI_LILIUM` is used, `EI_ABIVER` shall be set to `0`.
 
 ### Constraints on Executable/Loadable Files
 
