@@ -2,11 +2,11 @@
 
 ## Summary
 
-Lilium uses an extended version of the ELF format for both userspace executables and dynamic linking/loading, as well as kernel modules.
+Lilium uses an extended version of the ELF format for both userspace executables and dynamic linking/loading, as well as for kernel modules.
 
 ## Motivation
 
-<!--Provide a more concrete reasoning for this proposal-->
+The Lilium OS requires an executable format for executing 
 
 ## Informative Explanation
 
@@ -144,9 +144,10 @@ Userspace dynamic modules must either ignore tags in this range, or error upon l
 
 [`DT_GNU_HASH`]: #dt-gnu-hash
 
-`DT_GNU_HASH` is supported as an alternative for `DT_HASH`. 
+`DT_GNU_HASH` is supported as an alternative for `DT_HASH`, defined for compatibility with preexisting GNU and LLVM Toolchains. `DT_GNU
 
-An optimized format for hashing, and horribly undocumented.
+> **NOTE:**
+> THe GNU_HASH format is almost completely undocumented, and
 
 #### Hash Algorithm
 
