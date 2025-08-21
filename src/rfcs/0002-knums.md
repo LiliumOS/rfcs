@@ -232,7 +232,7 @@ Prior to the body, one or more attributes may be specified. Attributes are of th
 
 The following attributes are currently recognized:
 * `align(N)`, `N` must an expression of type `ulong`, and must be a power of two. Indicates that the type requires alignment to at least `N` bytes.
-* `option(ID)`. Inserts a field at the start of the structure type `ExtendedOptionHead` (The file `types::option` must be `use`d to use this struct attribute), and provides sufficient definitions. Must appear on a `struct`. 
+* `option(ID)`. Inserts a field at the start of the structure type `ExtendedOptionHead`, and provides sufficient definitions. Must appear on a `struct`. Both `types::option` and `types::uuid` must be `use`d to use this attribute,
 * `option_head(N)`: Must appear on a `union`. Inserts a field of an unnamed struct type, containing a field of type `ExtendedOptionHead` (the file `types::option` must be `use`d to use this attribute), and a field of type `[byte; N]`.
 
 #### `type` items
@@ -310,10 +310,6 @@ A UUID literal starts with `U` and is immediately followed by a braced UUID. Das
 
 A `const` item in scope may be named by an expression. The value of the expression is the value of the const. The const value is evaluated before being substituted - in particular, the substituted expression is not reparsed.
 
-Special constant values are always in scope:
-* `__LILIUM_SIZEOF_POINTER__` is defined to be the number of bytes in a pointer, a power of 2 that is at least 4
-* Constants that begin with `__LILIUM` are reserved for future definitions.
-
 #### Unary Operator Expressions
 
 Unary Operators may prefix an expression with an integer type. `-` is a value-wise negation of the value mod 2^N. `!` is a bitwise negation. `+` is an identity operation.
@@ -340,7 +336,67 @@ Parenthesis may surround an expression. This provides explicit grouping for the 
 
 ### Standard Types
 
-The following modules are
+The following modules are predefined:
+* `types::int`
+* `types::hdl`
+* `types::option`
+* `types::uuid`
+* `types`
+
+Other than the `types` module, which simply acts as if it contains `inline use` declarations for each of the preceeding, we define the contents of each of the modules below
+
+#### `types::int`
+
+The `types::int` module contains the following definitions. Additionally, any knums module that refers to an integer type must (potentially-indirectly) contain the declaration `use types::int;`. 
+
+```
+const __LILIUM_SIZEOF_POINTER__: ulong = /*see below*/;
+```
+
+`__LILIUM_SIZEOF_POINTER__` is defined to be equal to the number of bytes in a pointer.
+
+#### `types::hdl`
+
+The `types::hdl` module contains the following definitions. Additionally, any knums module that refers to `*handle T` or `*shared_handle T` must (potentially-indirectly) contain the declaration `use types::hdl;`
+
+```
+use types::int; // Required for __LILIUM_SIZEOF_POINTER__ below
+/// Base type of all handles in Lilium
+struct Handle : opaque;
+
+/// Handle Pointer that contains 16 bytes. A non-null pointer is guaranteed not to overlap in bit representation with a `Uuid`
+struct WideHandle<H> : align(16) {
+    hdl: *handle H!Handle,
+    pad([*const void; (16 - __LILIUM_SIZEOF_POINTER__)/__LILIUM_SIZEOF_POINTER__])
+}
+```
+
+#### `types::option`
+
+The `types::option` module contains the following definitions. Additionally, any knums module that uses the `option` or `option_head` struct attributes must (potentially-indirectly) contain the declaration `use types::option`.
+
+```
+use types::int;
+use types::uuid;
+
+struct ExtendedOptionHead {
+    id: Uuid,
+    flags: u32,
+    pad([u32; 3])
+}
+```
+
+#### `types::uuid`
+
+The `types::uuid` module contains the following definitions. Additionally, any knums module that uses the `option`  struct attribute or a UUID literal must (potentially-indirectly) contain the declaration `use types::uuid`.
+
+```
+use types::int;
+struct Uuid : align(16) {
+    minor: u64,
+    major: u64,
+}
+```
 
 ## Security Considerations
 
