@@ -16,6 +16,9 @@ Line comments begin with `//`, documentation line comments begin with `///`, and
 
 knum files are structured into folders and files, with each hierarchy level from the build root forming part of the file path (for `use` declarations). 
 
+The knums language is used both for consumption by automated tools, and also to be used as a common vocabulary for defining Lilium interfaces in a language-neutral manner. 
+Thus, future RFCs may use the language to define interfaces.
+
 ### Items
 
 The language has 5 main top-level constructs (items):
@@ -29,6 +32,18 @@ Additionally, there are "directive" items (led by a `%` sign on their own line).
 
 Each item, other than a directive, may have any number of documentation lines immediately preceeding it. Before any item, including `use` declarations and directives, (but not necessarily before any comments), any number of "file" documentation lines may appear. 
 
+### Types
+
+There are several kinds of types:
+* Integer types, which may be either signed or unsigned, and has a width in bits,
+* The Char type, which is an 8-bit element of a string,
+* The Byte type, which is a raw byte,
+* The Void type, which denotes a function that returns no value,
+* The Never type, which denotes a function that does not return,
+* Named types, which refer to a `struct`, `union`, or `type` definition,
+* Array types, which contain a number of another type
+* Function Pointer types, which denote a function that can be called with a particular signature
+* Data Pointer types. which have a pointee, and denotes an object of the pointee type.
 
 ## Normative Text
 
@@ -114,7 +129,7 @@ struct-field := *<doc-comment> <ident> ":" <type>
 
 struct-padding := "pad" "(" <type> "," <expr> ")"
 
-item-sysfn := "fn" <ident> <fn-signature> "=" <expr> ";"
+item-sysfn := "fn" <ident> <fn-signature> ["=" <expr>] ";"
 
 item-const := "const" <ident> ":" <type> "=" <expr> ";"
 
@@ -195,7 +210,8 @@ A `const` item defines an important named constant of a specified type.
 
 #### `fn` items
 
-An `fn` item defines a system function with a specified signature. It has an expression that represents the system function number within the subsystem it belongs to.
+An `fn` item defines a system function with a specified signature. It may have an expression that represents the system function number within the subsystem it belongs to. 
+Functions that omit the expression are defined in userspace only.
 
 An `fn` item's signature contains a number of parameters (at least 0) which have a type other than `void`, `!`,  or an array type. Parameters also have a name which are informative to users and documentation readers. It also has a return type which is a type other than an array type.
 
@@ -321,6 +337,10 @@ When multiple binary operators are chained, we associate them by precedence firs
 #### Parenthesis
 
 Parenthesis may surround an expression. This provides explicit grouping for the expression.
+
+### Standard Types
+
+The following modules are
 
 ## Security Considerations
 
