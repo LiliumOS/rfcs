@@ -53,6 +53,8 @@ We assign this range for Lilium toolchains and ELF loaders as follows:
 | Name                    | Value        |
 |:-----------------------:|--------------|
 | `PT_LOOS`               | `0x60000000` |
+| `PT_LO_EXPANSION`       | `0x61000000` |
+| `PT_HI_EXPANSION`       | `0x63FFFFFF` |
 | `PT_GNU_EH_FRAME`       | `0x6474e550` |
 | `PT_GNU_STACK`          | `0x6474e551` |
 | `PT_GNU_RELRO`          | `0x6474e552` |
@@ -61,6 +63,11 @@ We assign this range for Lilium toolchains and ELF loaders as follows:
 | `PT_HIOS`               | `0x6FFFFFFF` |
 
 The behaviour of each segment is described in subsections below.
+
+#### Expansion range
+
+Program headers between `PT_LO_EXPANSION` and `PT_HI_EXPANSION` are reserved for future optional uses. If a tool encounters a program header in this range it does not understand, it may ignore it, except that it should not modify either the file image or memory image of the segment (including the offset or load address) other than to remove the segment entirely. 
+No Segment with a `p_type` in this range is required for correctly loading the memory image of the program.
 
 #### Exception Handling.
 
