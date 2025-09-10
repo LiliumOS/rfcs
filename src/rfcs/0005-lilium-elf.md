@@ -29,7 +29,7 @@ Executable Files and Shared Object modules on Lilium are defined by the [generic
 
 ### OS ABI
 
-Lilium supports the use of `OSABI_SYSV` (0) and `OSABI_LILIUM` (TODO) ELF Files. Both are treated identically if 
+Lilium supports the use of `OSABI_SYSV` (0) and `OSABI_LILIUM` (TODO) ELF Files. Both are treated identically if no extensions are used - `OSABI_SYSV` is not supported if any extensions are in use.
 `OSABI_LILIUM` should be preferred if the binary contains any of the extensions used herein, except that for compatibility with the GNU and LLVM toolchains, the use of `DT_GNU_HASH` together with `DT_HASH` is supported on `OSABI_SYSV`, as is the use of `PT_GNU_STACK`.
 
 In the current version, if `OSABI_LILIUM` is used, `EI_ABIVER` shall be set to `0`.
@@ -86,6 +86,7 @@ The format is as defined for `.eh_frame_hdr` as specified by [LSB 5.0 Core (.eh_
 
 `PT_GNU_RELRO` is recognized for compatibility with GNU and LLVM toolchains. If it the program header is present, the dynamic linker may disable write access to any memory region that resides within the segment after applying dynamic relocations. If this behaviour is implemented, the dynamic linker must act as though the module being loaded defines the `DT_NOW` dynamic tag. 
 It is deprecated to have a `PT_GNU_RELRO` header without one of the following in the dynamic section:
+
 * a `DT_NOW` dyanmic tag,
 * a `DT_FLAGS` dynamic tag that sets `DF_NOW`,
 * A `DT_FLAGS_1` dynamic tag that sets `DF_1_NOW`
