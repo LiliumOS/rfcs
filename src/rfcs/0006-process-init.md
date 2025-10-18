@@ -2,22 +2,41 @@
 
 ## Summary
 
-When processes are initialized, or a when program entry point is given control from the dynamic linker, certain information is passed into it. To faciliate 
+When processes are initialized, or a when program entry point is given control from the dynamic linker, certain information is passed into it. To faciliate access to this information, we provide an optional (testable) series of extensions, and room for future expansion.
 
 ## Motivation
 
-<!--Provide a more concrete reasoning for this proposal-->
+The System-V ABI defines how the process entry point is called by the kernel or by the dynamic linker. However, the entry point defined by the ABI is a legacy detail that is not necessarily well optimized. In particular the ABI requires linear scanning to find the environment and the (largely unspecified) auxillary vector.
 
 ## Informative Explanation
 
-<!--Provide an informative explanation of proposal. 
-This is intended to be read by someone who wishes to understand the proposal but may not have advanced technical background.
-This section is intended for:
-* People using the Lilium Operating System as a Software Developer
-* People looking to understand the Lilium Operating System
-* People looking to understand the Lilium Project as a whole
+### Initialization Stack Frame and Fast Lookup
 
-This section is not normative-->
+When program execution begins, control is transfered to an entry point. This entry point reads important data passed to it by the kernel or dynamic linker, calls setup routines in the USI implementation, then calls the `main` function defined by the program. Some information passed in is used by the program's `main` function, such as `argc`, `argv,` and `envp`. Other information is used strictly by the USI, namely the auxillary vector. Other information used in the auxillary vector is used by the dynamic linker itself. 
+The default ABI passes this information linearily on the stack, requiring the entry point to scan the stack to find the environment and auxillary arrays. On Lilium, this is optimized by passing these pointers in registers. Not all kernels or dynamic linkers are required to implement this behaviour, and thus the program's entry point must test the presence of these features.
+
+Most programs will not directly interact with this feature, mainly the initialization files provided by the USI implementation. 
+
+### Auxillary Vector
+
+ The Auxillary Vector is additional information passed from the kernel to the program, mostly read by the dynamic linker and the USI implementation. The information is used to correctly and securely implement dynamic loading and resource acquisition, and optimize certain operations like producing random numbers. 
+
+Among the information passed by the auxiliary vector are:
+* The base address of the dynamic linker,
+* The current platform of execution,
+* Whether or not the program is supposed to be executed in a "secure" manner and requires special treatment in the system,
+* Random bytes to initialize Psuedo-random Number generators in userspace,
+* The name and a handle to the executable file (used by the dynamic linker to load the executable)
+* The array and count of initial handles passed to the program.
+
+Most programs do not need to access the auxillary vector as it is primarily used by the USI implementation and by the dynamic linker. However, the auxillary vector passed to the program (usually by the dynamic linker rather than directly from the kernel) can be accessed using the `gexauxval` function:
+```
+fn getauxval(a_type: ulong) -> *mut void;
+```
+
+The values of `a_type` are defined in the Normative section of this RFC. Note that while the return type of `getauxval` is a pointer, the value may be a `ulong`, a pointer, a function pointer, or a handle depending on `a_type`. Additionally, not all valid `a_type` values will produce meaningful values. Notably, any `a_type` that produces a handle may have been closed, and won't be accessible on any thread other than the initial thread. 
+
+`AT_RANDOM` in particular may be defined, but programs should use `random_fill` (USI provided CSPNG seeded by `AT_RANDOM`) or `GetRandomBytes` (access to hardware random bytes). 
 
 ## Normative Text
 
@@ -109,7 +128,7 @@ The Process Initialization Capabilities Word is `rax`. `r12` contains a pointer 
 
 #### `i686`
 
-The Process Initialization Capabilities Word is `eax`. Additionally, `edx` is reserved to store high bits of the Capabilities Word. `esi` contains a pointer to `envp[0]`, `ebx` contains a pointer to `auxv[0]`
+The Process Initialization Capabilities Word is `eax`. Additionally, `edx` is reserved to store high bits of the Capabilities Word if and only if `eax[0]` is set (otherwise, it is undefined). `esi` contains a pointer to `envp[0]`, `ebx` contains a pointer to `auxv[0]`
 
 ## Security Considerations
 
@@ -121,33 +140,44 @@ The auxiliary vector can present security issues if misused/set incorrectly by e
   * A system library or program should not rely on any file not owned by `SYSTEM` or the current primary principal if it uses that file for a security purposes, even if that file is located within a well-known system directory
   * Unlike other systems, the resolution root directory (called `chroot` on posix) is not necessarily reliable, as unprivileged code may establish a local resolution root
   * `AT_EXECFN` should likewise not be treated as reliable by loaders, as it may be a hardlink that changes its destination between being read by the kernel and by the loader. `AT_LILIUM_EXECHDL` *must* always be set by the kernel when it invokes an interpreter for an `AT_SECURE` binary
-* `AT_RANDOM` may be used to initialize psuedo-random number generators that are relied upon for high quality randomness. The kernel and the loader (if it sets its own `AT_RANDOM` entry) should generate a high quality byte source for it (see the two requirements for the value). If the loader uses `AT_RANDOM` as a source of randomness (for example, to seed ASLR), it should generate a new `AT_RANDOM` value for the program. `AT_RANDOM` should only be used at process startup (typically by the USI).
+* `AT_RANDOM` may be used to initialize psuedo-random number generators that are relied upon for high quality randomness (including cryptographic security). The kernel and the loader (if it sets its own `AT_RANDOM` entry) should generate a high quality byte source for it (see the two requirements for the value). If the loader uses `AT_RANDOM` as a source of randomness (for example, to seed ASLR), it should generate a new `AT_RANDOM` value for the program. `AT_RANDOM` should only be used at process startup (typically by the USI).
   * Programs that use `AT_RANDOM` should not use it as a source of random data on its own, rather it should be used to seed a PRNG in userspace that is high enough quality for the use of the value. 
   * It is not guaranteed that `AT_RANDOM` is uniformly distributed on its own, only that it can produce ~64 bits of enthropy when passed through a Cryptographic Hash Algorithm, and that it is unlikely to be repeated (2^-64 probability).
 
 
 ## ABI Considerations
 
-<!--
-If this proposal impacts either the Userspace or System Application Binary Interface, 
--->
+This substantially modifies the process initialization ABI, in two manners:
+* If the ABI is implemented (and advertised) it requires several registers to be set accordingly,
+* Even if not implemented, every kernel and dynamic linker for Lilium must treat at one register as reserved and must zero it instead of potentially leaving leftover/unitialized data in the register,
+  * For a kernel, this is not a substantial issue, as the kernel will be likely not to want to leave arbitrary data in registers passed to userspace, however this may have binary size effects on dynamic linkers, 
+  * This also means that the register cannot be used later for other purposes, whether defined by RFC, upstream, or by a specific kernel/dynamic linker
+
+
+Additionally, this fixes additional details about an unspecified part of the ABI, namely:
+* The methods used to pass the executable file to the dynamic linker,
+* The fact that the `AT_RANDOM` is (at the very least) suitable for seeding CSPRNGs, and
+* The upper bound of `at_type` values at 95.
 
 ## Prior Art
 
+* [x86-64 ABI]
+* [IA-32 ABI]
+
 ## Future Direction
 
-<!--
-Provide an informative explanation of any future possibilities.
--->
+* Additional Features may be added to the Extened Initialization Capabilities Register,
+* Extended Initialization ABI for other Architectures can be defined in future RFCs
 
 ## References
 
 ### Normative References
 
-<!--List all documents cited normatively here. 
-A Normative Reference is a reference within the main text (Normative Text section, Security Considerations, or Registry Impacts) for the meaningful content within.
-For example, if you use definitions from another specification, it would be a normative reference.
--->
+* [x86-64 ABI]
+* [IA-32 ABI]
+
+[x86-64 ABI]: https://gitlab.com/x86-psABIs/x86-64-ABI
+[IA-32 ABI]: https://gitlab.com/x86-psABIs/i386-ABI/-/blob/master/docs/i386-psABI-2025-08-24.pdf
 
 ### Informative References
 
