@@ -29,7 +29,7 @@ The top 16 bits of the partition attributes are presently reserved and must be 0
 
 ### MBR Partition Table
 
-There is no specific support specified for LiliumFS partitions allocated in MBR format. However, only LBA addressing may be used for 
+There is no specific support specified for LiliumFS partitions allocated in MBR format. However, only LBA addressing may be used for LiliumFS if that support is provided by a third party.
 
 ### Block Size
 
