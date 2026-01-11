@@ -42,7 +42,7 @@ The vendor is not specified by the Lilium Project. However, for consistency betw
 
 ### x86 architecture names
 
-The use of i686 as a target name is recommended to refer the Intel 686/P6 Microarchitecture (beginning with the Pentium Pro). The i786 architecture name should be instead used when a Pentium 4 Minimum is required. This is consistent with the results of reading `arch_version` on 32-bit x86 targets.
+The use of i686 as a target name is recommended to refer the Intel 686/P6 Microarchitecture (beginning with the Pentium Pro). The i786 architecture name should be instead used when a Pentium 4 Minimum is required. This is consistent with the results of reading `arch_version` on 32-bit x86 targets. Use of other x86 target names is deprecated with the `std` environment, as the standard USI does not support x86 processors that preceded the i686.
 
 ### Non-canonical Targets
 
