@@ -2,7 +2,7 @@
 
 ## Summary
 
-The Base Subsystem is one of Four core subsystems in Lilium. It represents fundamental and general operations for all programs
+The Base Subsystem is one of Four core subsystems in Lilium. It represents fundamental and general operations for all programs, that generally 
 
 ## Motivation
 
