@@ -156,10 +156,11 @@ Userspace dynamic modules must either ignore tags in this range, or error upon l
 
 [`DT_GNU_HASH`]: #dt-gnu-hash
 
-`DT_GNU_HASH` is supported as an alternative for `DT_HASH`, defined for compatibility with preexisting GNU and LLVM Toolchains. `DT_GNU
+`DT_GNU_HASH` is supported as an alternative for `DT_HASH`, defined for compatibility with preexisting GNU and LLVM Toolchains. `DT_GNU_HASH` is defined according to the following format.
 
 > **NOTE:**
-> THe GNU_HASH format is almost completely undocumented, and
+> THe GNU_HASH format is almost completely undocumented, and has very little description. This is based on observed experience, and a partial description at <https://flapenguin.me/elf-dt-gnu-hash>.
+> Tooling that emits hash tables according to this format will be compatible with stock Lilium dynamic linkers.
 
 #### Hash Algorithm
 
@@ -246,9 +247,7 @@ The ELF Format, and its constraints, forms a part of the OS-specific ABI of Lili
 
 ## Future Direction
 
-<!--
-Provide an informative explanation of any future possibilities.
--->
+* Additional Section Types, Segment Types, Dynamic Tags, and other OS-reserved constants within the ELF Specification
 
 ## References
 
