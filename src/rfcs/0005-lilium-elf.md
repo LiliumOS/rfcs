@@ -121,17 +121,17 @@ How other sections of type `SHT_LILIUM_REQUIRE_SUBYSTEMS` are handled during lin
 
 ### OS Specific Dynamic Tags
 
-| Name                           | Value        | `d_un`  | Executable | Shared Object |
-|:------------------------------:|--------------|---------|------------|---------------|
-| `DT_LOOS`                      | `0x6000000D` | N/A     | N/A        | N/A           |
-| `DT_LILIUM_HASHENT`            | `0x6000000D` | `d_val` | Optional   | Optional      |
-| `DT_LILIUM_HASH`               | `0x6000000E` | `d_ptr` | Optional   | Optional      |
-|`DT_LILIUM_REQUIRE_SUBSYSTEMSSZ`| `0x6000000F` | `d_val` | Optional   | Optional      |
-|`DT_LILIUM_REQUIRE_SUBSYSTEMS`  | `0x60000010` | `d_ptr` | Optional   | Optional      |
-| `DT_LILIUM_LOKERNEL`           | `0x6FE00000` | N/A     | Disallowed | N/A           |
-| `DT_LILIUM_HIKERNEL`           | `0x6FEFFFFF` | N/A     | Disallowed | N/A           |
-| `DT_HIOS`                      | `0x6FFFF000` | N/A     | N/A        | N/A           |
-| `DT_GNU_HASH`                  | `0x6FFFFEF5` | `d_ptr` | Optional   | Optional      |
+| Name                             | Value        | `d_un`  | Executable | Shared Object |
+|:--------------------------------:|--------------|---------|------------|---------------|
+| `DT_LOOS`                        | `0x6000000D` | N/A     | N/A        | N/A           |
+| `DT_LILIUM_HASHENT`              | `0x6000000D` | `d_val` | Optional   | Optional      |
+| `DT_LILIUM_HASH`                 | `0x6000000E` | `d_ptr` | Optional   | Optional      |
+| `DT_LILIUM_REQUIRE_SUBSYSTEMSSZ` | `0x6000000F` | `d_val` | Optional   | Optional      |
+| `DT_LILIUM_REQUIRE_SUBSYSTEMS`   | `0x60000010` | `d_ptr` | Optional   | Optional      |
+| `DT_LILIUM_LOKERNEL`             | `0x6FE00000` | N/A     | Disallowed | N/A           |
+| `DT_LILIUM_HIKERNEL`             | `0x6FEFFFFF` | N/A     | Disallowed | N/A           |
+| `DT_HIOS`                        | `0x6FFFF000` | N/A     | N/A        | N/A           |
+| `DT_GNU_HASH`                    | `0x6FFFFEF5` | `d_ptr` | Optional   | Optional      |
 
 #### `DT_LILIUM_HASH`
 
@@ -140,7 +140,7 @@ How other sections of type `SHT_LILIUM_REQUIRE_SUBYSTEMS` are handled during lin
 ### `DT_LILIUM_REQUIRE_SUSBYSTEMS`
 
 The `DT_LILIUM_REQUIRE_SUBSYSTEMS` contains a pointer to an array of offsets into the `DT_STRTAB`, with `DT_LILIUM_REQUIRE_SUBSYSTEMSSZ` defining the total size of the array in bytes. 
-On ELFCLASS64 only, the top 2 bits encodes the entry size, where `00` is size 4, and `01` is size 8, with other size values being reserved. On ELFCLASS32, only entry size is encoded.
+On ELFCLASS64 only, the top 2 bits encodes the entry size, where `00` is size 4, and `01` is size 8, with other size values being reserved. The bottom 62 bits encodes the total size. On ELFCLASS32, only total size is encoded.
 
 When loading a module with `DT_LILIUM_REQUIRE_SUBSYSTEMS`, the dynamic linker will, for each entry, try to load the corresponding kernel subsystem as though by calling `OpenSubsystem`. If an error occurs, the dynamic linker will refuse to load the module (and may result in a fatal error the loading function returning an error result). The dynamic loader may elide a particular call to `OpenSubsystem` if it knows the subsystem is already loaded (for example, by keeping a cache of loaded subsystems, or when a named subsystem is known to always be loaded on the current kernel).
 
