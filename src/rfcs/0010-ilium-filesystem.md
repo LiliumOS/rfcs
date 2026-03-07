@@ -72,7 +72,7 @@ struct LiliumFSHeader : align(4096) {
 }
 ```
 
-`identifier` is the unique identifier for the filesystem format, `1183429f-40f8-5638-baf7-835828aba375`. This UUID is unique to LiliumFS and is unlikely to be present on any other volume.
+`identifier` is the unique identifier for the filesystem format, `1183429f-40f8-5638-baf7-835828aba375`. This UUID is unique to LiliumFS and is highly unlikely to be present on any other volume.
 
 `header_size` is the total size, in bytes, of the header. It must be at most 4096, and at least 120. This allows extensions that grow the size of the header to be backwards compatible to earlier filesystems.
 
@@ -144,10 +144,10 @@ struct Object: align(64) {
 
 `object_type` is a hint about the primary purpose and stream of the object:
 - `0` (Regular File): The object primarily contains data, to be interpreted by programs opening the file. Regular files should have a "FileData" stream that contains these bytes
-- `1` (Directory): The object is primarily a directory that contains other files. Directories should have a "DirectoryContent" stream that contains the files
+- `1` (Directory): The object is primarily a directory that contains other files. Directories should have a "DirectoryContent" stream that contains the list of files
 - `2` (Symlink): The Object Primarily refers to the logical path of another object. In most cases, Symlinks are transparently replacable with the referent path. Symlinks should have a "SymlinkTarget" stream that contains the logical path as a UTF-8 stirng
-- `3` (POSIX FIFO): The object is primarily a Named Pipe/FIFO object. 
-- `4` (Unix Socket): The object is primarily a Unix Socket. 
+- `3` (POSIX FIFO): The object is primarily a Named Pipe/FIFO object. This object type has no associated stream
+- `4` (Unix Socket): The object is primarily a Unix Socket. This object type has no associated stream
 - `5` (Block Device): The object is primarily a Block Device. Block Device Files should have a "DeviceId" stream or a "LegacyDeviceNumber" stream.
 - `6` (Character Device): The object is primarily a Character Device. Character Device Files should have a "DeviceId" stream or a "LegacyDeviceNumber" stream.
 - 65535 (Custom Type): The object has implementation-specific or custom semantics. Custom Type Objects should have a "CustomObjectInfo" stream.
@@ -189,17 +189,16 @@ struct StreamDescriptor : align(128) {
 `flags_and_type` are defined as follows:  
 
 * The bottom 4 bits (indirection) contains the indirection level, where `0` means the the content is present in `inline_content`, `1` means the content is located by `alloc`, and values `2` and above mean that `alloc` points to an indirection array and the content must be resolved by iterating through that many levels of indirections, starting from `alloc`, Up to indirection 15 is permitted
-* Bits 4, 5, 6, and 7 are support bits: If Bit 4 (REQUIRED) is set, the implementation shall not permit access to the object if it does not recognize the stream name. If Bit 5 (WRITE_REQUIRED) is set, the implementation shall not permit write access to the object if it does not recognize the stream name unless it also removes that stream at the same time. If Bit 6 (PRESERVE) is set, the implementation shall not remove the stream if it does not recognize the stream name (See Below for an exception). If Bit 7 (STRINGS) is set, then the stream contains structural references to the `Strings` stream.
+* Bits 4, 5, 6, and 7 are support bits: If Bit 4 (REQUIRED) is set, the implementation shall not permit any access to the object if it does not recognize the stream name. If Bit 5 (WRITE_REQUIRED) is set, the implementation shall not permit write access to the object if it does not recognize the stream name unless it also removes that stream at the same time. If Bit 6 (PRESERVE) is set, the implementation shall not remove the stream if it does not recognize the stream name (See Below for an exception). If Bit 7 (STRINGS) is set, then the stream contains structural references to the `Strings` stream.
 * Bits 8 through 16 (stype) contain the stream type, of which 8 are presently defined:
-    * `0` (UDATA): The stream contains unstructured data that can be read or written to arbitrarily,
-    * `1` (SDATA): The stream contains structured data that can be read but must be written to according to the structure,
-    * `2` (UMDATA): The stream contains unstructured metadata (comment)
-    * `3` (USDATA): The stream contains structured metadata that can be read but must be written to according to the structure,
-    * `4` (SECURITY): The stream contains structured metadata that is critical to security,
-    * `5` (NDATA): The stream contains no data (size is 0),
-    * `6` (DESC): The stream contains structured metadata that describes how to interpret another stream,
-    * `7` (INFO): The stream contains structured metadata that describes how to interpret the object.
-    * `255` (STREAM_DEFINED): The content and behaviour of the stream cannot be interpreted without recgonizing the stream.
+  * `0` (UDATA): The stream contains unstructured data that can be read or written to arbitrarily,
+  * `1` (SDATA): The stream contains structured data that can be read but must be written to according to the structure,
+  * `2` (UMDATA): The stream contains unstructured metadata (comment)
+  * `3` (SMDATA): The stream contains structured metadata that can be read but must be written to according to the structure,
+  * `4` (SECURITY): The stream contains structured metadata that is critical to security,
+  * `5` (NDATA): The stream contains no data (size is 0),
+  * `6` (DESC): The stream contains structured metadata that describes how to interpret another stream,
+  * `7` (INFO): The stream contains structured metadata that describes how to interpret the object.
 * Bits 48 through 63 (stream_bits) are stream-specific bits. The meaning is defined per stream name and shall be ignored if the implementation does no recognize the stream type
 
 
@@ -208,6 +207,7 @@ struct StreamDescriptor : align(128) {
 `size` is the total size of the stream, in bytes. 
 
 `inline_content` contains the content of the stream if `indirection == 0`, otherwise the contents are undefined. Thus small amounts of data can be stored directly within the stream descriptor.
+
 
 #### Indirections
 
@@ -232,6 +232,8 @@ The first entry of the `Streams` array is a reference to the `Streams` stream it
     * `stype` is `INFO`,
     * `stream_bits` are all set to `0`
 
+Every implementation of the filesystem must support the `Streams` stream.
+
 #### The `Strings` stream
 
 An object may have a `Strings` stream. This allows other streams (including the `Streams` stream) to refer to arbitrary length UTF-8 data without having to encode potentialy long data.
@@ -253,9 +255,76 @@ An object may have an arbitrary set of streams. The `name` of the stream identif
 
 Note that this RFC does not define a mechanism for arranging for the uniqueness of third-party stream types.
 
+### Required Stream types
+
+Several Stream types are defined that are not critical to interpreting the filesystem itself, but are necessary for any implementation to support regardless. A Correct implementation must defined support for at least the following stream types (in addition to the types identified previously):
+
+* `FileData`
+* `DirectoryContent`,
+* `SymlinkTarget`,
+* `SecurityDescriptor`.
+
+Certain other stream types are necessary to interpret the certain objects, but not to support the filesystem itself. These streams are marked as REQUIRED (access to the object is denied) but are not required to be implemented for access to all filesystems:
+
+* `DeviceId`,
+* `LegacyDeviceNumber`,
+* `LegacySecurityDescriptor`.
+
+
+#### The `FileData` stream
+
+The `FileData` stream is a stream that encapsilates the contents of a file. It has the following stream properties:
+
+* `name` of the stream is `FileData`
+* `type_and_flags` is set as follows:
+  * `REQUIRED` is set. 
+  * `stype` is 0 (`UDATA`)
+    * Note: depending on the file, the stream may contain data used by an application program that may be structured from the point of view of the program. Regardless, `stype` 1 (`SDATA`) shall not be used (as the file content is unstructured from the perspective of the filesystem and filesystem implementation)
+  * All `stream_bits` are 0
+
+#### The `DirectoryContent` stream
+
+The `DirectoryContent` stream is a stream that lists the files contained in a directory. It has the following stream properties:
+
+* `name` of the stream is `DirectoryContent`
+* `type_and_flags` is set as follows:
+    * `REQUIRED` and `STRINGS` are set
+    * `stype` is `SDATA`
+    * All `stream_bits` are 0
+
+The stream content is an array of the following 64-byte structures. Note that the array may be empty:
+
+```
+struct DirectoryContentEntry {
+    name_ref: u64,
+    flags: u64,
+    object_ref: u64,
+    name_bytes: [u8; 32],
+    pad([u8;8])
+}
+```
+
+`name_ref` is either 0 or a offset into the `Strings` stream of the object referring to the name of the directory entry. If this is zero, then `name_bytes` contains the name as UTF-8 string padded with null bytes, if that name is up to 32 bytes long. The name may not contain any of the following characters:
+
+* `/`
+* `$`
+* `\0`
+
+### The `SymlinkTarget` stream
+
+The `SymlinkTarget` stream provides a string reference to the target of a symbolic link object. It has the following stream properties:
+
+* `name` of the stream is `SymlinkTarget`
+* `type_and_flags` is set as follows:
+    * `REQUIRED` is set
+    * `stype` is `SDATA`
+    * All `stream_bits` are 0
+
+The content of the stream is a UTF-8 string contains a path. Resolving the symlink stream performs ordinary path resolution, using the symlink object as the starting point for relative paths.
+
 ## Security Considerations
 
-<!--If the proposal requires users and/or implementors to take anything into consideration for security reasons, document this here.-->
+Filesystems are an integral part of data and program security, particularily filesystems upon which critical system software or the kernel are loaded from. Correct implementation of the filesystem, particularily elements marked as security features, is critical to preserving system security. 
 
 ## ABI Considerations
 
