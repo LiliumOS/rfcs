@@ -49,7 +49,7 @@ struct LiliumFSIdentity: align(512) {
 
 The Primary Header is located at block index 1. It identifies the partition or volume as a LiliumFS volume and defines the information necessary for correct interpretation of the filesystem.
 
-The format is defined as follows. It is currently 128 bytes in size, though it takes up the entirety of block 1.
+The format is defined as follows. It is currently 128 bytes in size, though it takes up the entirety of block 1, except for a 32-byte SHA-256 checksum at the end that covers the entire `header_size` bytes.
 
 ```
 struct LiliumFSHeader : align(4096) {
@@ -71,16 +71,16 @@ struct LiliumFSHeader : align(4096) {
 
 `identifier` is the unique identifier for the filesystem format, `1183429f-40f8-5638-baf7-835828aba375`. This UUID is unique to LiliumFS and is highly unlikely to be present on any other volume.
 
-`header_size` is the total size, in bytes, of the header. It must be at most 4096, and at least 128. This allows extensions that grow the size of the header to be backwards compatible to earlier filesystems.
+`header_size` is the total size, in bytes, of the header. It must be at most 4064, and at least 144. This allows extensions that grow the size of the header to be backwards compatible to earlier filesystems.
 
 `volume_name` is the inline name of the volume, if less than 21 bytes (UTF-8 encoded), padded with 0s, or all 0s if the volume name is out of line (when `volume_name_offset` is non-zero). `volume_name_offset` is either `0` or the offset into the `Strings` stream of the root object which is the out of line name of the volume.
 `volume_id` is a Unique ID generated when the FS is first created that uniquely identifies it. When the volume is located on a partition of a GPT-formatted disk, this should be the same as the partiton ID.
 
-`object_list_end` points to the block which follows the last block of the object list (typically, this is the last block of the volume), and `object_list_count` is the total count of the objects in the object list (not the number of blocks). Indecies into the object list count backwards from this position, `object_list_end` also points past the end of the first entry in the object array.
+`object_list_end` points to the block which follows the last block of the object list (typically, this is the last block of the volume), and `object_list_count` is the total count of the objects in the object list (not the number of blocks). Indecies into the object list count backwards from this position, `object_list_end` also points past the end of the first entry in the object array. This has the same format as an the `begin_block` field of an `Allocation`, except that no flags may be set.
 
 `root_object` is the index into the object list which is the root directory of the filesystem.
 
-`allocation_list_begin` points to the first block of the allocation list. `allocation_list_length` is the number of blocks used to store the allocation list.
+`allocation_list_begin` points to the first block of the allocation list. This has the same format as an the `begin_block` field of an `Allocation`, except that no flags may be set. `allocation_list_length` is the number of blocks used to store the allocation list.
 
 `required_features_list` and `optional_features_list` are bitsets for features that are reserved for future use. Unknown features set in `optional_features_list` must be ignored. Unknown features set in `required_features_list` are an error (the filesystem cannot be used).
 
@@ -91,6 +91,7 @@ The primary header and this hash is mirrored to the block immediately following 
 
 * 0x0000_0000_0000_0001 (`temp_data`): If this flag is set, the contents of the filesystem are not considered to be preserved between boots/mounts. All objects other than the root object may be deallocated when the filesystem is mounted (unless mounted read-only), and the root directory may be implicitly cleared on mount. This flag is suitable for temporary filesystems that may need to store large data (which is unsuitable for a ramfs). 
 
+
 ### Allocation List
 
 The allocation list is used to track extents for streams it consists of a list of 32 byte entries (with 128 entries per block) defined as follows:
@@ -100,7 +101,7 @@ struct Allocation : align(32) {
     begin_block: u128,
     length_bytes: u64,
     in_use: u32,
-    attributes: u32,
+    expansion_hint: u32,
 }
 ```
 
@@ -109,9 +110,15 @@ The `in_use` flag is set to 1 if the allocation is in use, that is:
 * It is referred to, directly or indirectly, by a stream, or
 * It is one of the special entries described below, other than the null entry.
 
-Otherwise it is set to 0.
+Otherwise it is set to 0 and may be overwritten.
 
-The `attributes` word is set to 0 in current versions of the filesystem, `begin_block` is the first block of the span, and `length_bytes` is the total size in bytes, of the span. Note that allocations are only granular to the block - if any byte in a block is allocated, the entire block cannot be used for another allocation.
+Other values are invalid: if `in_use` is set to a value greater than 1 in current versions of the filesystem, the implementation shall either treat this as an error, or disallow any write that would affect the allocation.
+
+The top 116 bits of the `begin_block` field contains the *block* offset of the first block of the allocation. The bottom 12 bits are flags that are reserved for further use. Note that the entire value, masked by `!4095` is the *byte* offset of the first block.
+
+`length_bytes` is the total size in bytes, of the span. Note that allocations are only granular to the block - if any byte in a block is allocated, the entire block cannot be used for another allocation.
+
+`expansion_hint` corresponds to the number of additional blocks (not bytes) the allocation is intended to be expanded by later. This is a hint that that many trailing blocks should be treated as reserved, unless the space is needed to allocate actual space in some other file. Note that this does not make the allocation "own" these blocks, and the blocks may nonetheless be 
 
 An allocation with a `begin_block` of `0` and a `length_bytes` of `0` is a null (unused) entry. This can be used to easily free an allocation.
 
@@ -161,7 +168,7 @@ struct Object: align(64) {
 - `4` (Unix Socket): The object is primarily a Unix Socket. This object type has no associated stream
 - `5` (Block Device): The object is primarily a Block Device. Block Device Files should have a "DeviceId" stream or a "LegacyDeviceNumber" stream.
 - `6` (Character Device): The object is primarily a Character Device. Character Device Files should have a "DeviceId" stream or a "LegacyDeviceNumber" stream.
-- 65535 (Custom Type): The object has implementation-specific or custom semantics. Custom Type Objects should have a "CustomObjectInfo" stream.
+- 65535 (Custom Type): The object has implementation-specific or custom semantics. Custom type objects have no default stream.
 - other values are reserved and implementations MUST not allow access to objects with invalid types. 
 
 `flags` contain flags for the Object. No such flags are currently defined and the field shall be `0`.
@@ -227,10 +234,24 @@ When `indirection > 0`, the `alloc` entry refers to the content of the stream by
 To determine the content of the stream, form a tree as follows:
 * The root node of the tree is `alloc`,
 * There are `indirection` total levels of node,
+* Indirection nodes point to an array of the `Indirection` type defined below.
 * The last level of nodes are all leaf nodes, with all other levels being indirection nodes.
-* For each indirection node, populate the next level down of nodes by taking the span referred by the allocation entry pointed to by the node as an array of `u64`, each of which are indexes into the allocation table that point to the next node.
 
-The content of the stream is taken by concatenating each leaf node from left to right.
+
+The content of each indirection node is a sorted list of the following data structure:
+```
+struct Indirection: align(16) {
+    byte_offset: u64,
+    allocation_entry: u64,
+}
+```
+
+`byte_offset` is the block aligned offset of the first byte of the subspan of the file covered by `Indirection`. `allocation_entry` is the pointer to the allocation that covers the next level. 
+
+Subspan offsets are specified at the following level:
+* The first level, subspan offsets are file offsets,
+* The second and further levels, subspan offsets start from the first level of indirection
+
 
 #### The `Streams` stream
 
