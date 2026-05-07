@@ -57,7 +57,7 @@ In RVA Resolved Mode, the object shall be handled by a link editor in a hybrid f
 * The Relative Virtual Address of any two sections in the file covered by a `PT_LOAD` or `PT_TLS` segment must be preserved,
 * On psABIs that support `R_*_RELATIVE` and `R_*_IRELATIVE` relocations, these must be resolved according to the target relocation format, using the base address of the relocation image. If the result is a shared object and position independant executables, these must be adjusted to `R_*_RELATIVE` and `R_*_IRELATIVE` relocations using the base address within the full image,
 * All other relocation types must be handled the same way as the same relocation type for an `ET_REL` file,
-* `DT_NEEDED` entries and the contents of the `DT_STRTAB` must be copied into the output file,
+* `DT_NEEDED` entries and the contents of the `DT_STRTAB` must be copied into the output file and the `DT_NEEDED` entries must be updated accordingly,
 * The considerations defined in [Recommended Treatment for Static Libraries](#static-linking-recommendations) apply when linking RVA Resolved static libraries.
 
 Only an RVA Resolved Mode `ET_LILIUM_STATIC_LIBRARY` file may have a program header, and the program header may only contain the following segment types:
@@ -118,7 +118,7 @@ RVA Resolved Static Libraries cannot be converted to an ET_REL file.
 
 When producing a static library file, a link editor may be instructed to link shared object files. The treatment of these files should be the same as for executable and dynamic library linking. When this occurs, a `.dynamic` section must be emitted to contain a `DT_STRTAB` and `DT_NEEDED` entries for those files. Other entries must not be produced.
 
-For RVA Resolved library files, a PT_DYNAMIC segment must not be generated, and the `.dynamic` section must not be covered by any PT_LOAD segment. This allows the section to be incorporated into 
+For RVA Resolved library files, a PT_DYNAMIC segment must not be generated, and the `.dynamic` section must not be covered by any PT_LOAD segment. This allows the section to be incorporated into the top-level `PT_DYNAMIC` segment for executables and shared objects.
 
 ### Archives
 
