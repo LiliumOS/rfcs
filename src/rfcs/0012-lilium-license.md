@@ -6,7 +6,7 @@ The Lilium License is a permissive license that provides copyright, patent, and 
 
 ## Motivation
 
-Certain future design features
+The Lilium kernel, and some associated parts of the userspace, are open source software, allowing any user to freely share it, and to examine and modify it for their own use or needs, or simply as an educational activity. However, planned features, such as elf signing, could be used as a form of DRM by a third party, effectively limiting the freedoms of the end users. To avoid this, Lilium needs to adopt a permissive license that provides explicit grants around Technological Protection Measures that allow end user rights to persist even in the presence of third party, closed source software.
 
 ## Informative Explanation
 
@@ -72,7 +72,7 @@ Everyone who receives a copy of this work shall have from the Copyright Holders 
   * Their Contributions Alone, or
   * The Combination of their Contribution and the Work at the time the Contribution was actually included in the work.
 
-The above Patent License shall be revoked to a particular person or persons on such a day that the person may file, in any court worldwide, a suit against the any Copyright Holder or Copyright Holders, against any Contributor or Contributors, or against any Copyright Holder or Copyright Holders together with any Contributor or Contributors, alleging that this Work or any Contribution or combination of Contributions thereof, infringes any patent they have rights to. 
+The above Patent License shall be revoked to a particular person or persons on such a day that the person may file, in any court worldwide, a suit against the any Copyright Holder or Copyright Holders, against any Contributor or Contributors, or against any Copyright Holder or Copyright Holders together with any Contributor or Contributors, alleging that this Work or any Contribution or combination of Contributions thereof, infringes any patent they have rights to.
 
 #### §3 Limited Trademark License
 
@@ -198,6 +198,15 @@ Where This License may be revoked to any person, the permissions granted under i
 
 Where a Court of Competent Jurisdiction finds any provision of this agreement to be illegal or unenforceable, the remainder of this agreement shall remain in force.
 
+### Licensing of Software by the Lilium Project
+
+Presently, all software released by the Lilium Project is available under the MIT and Apache 2.0 License (either or license, or both, at the option of the end user). These provided permissive copyright and patent licenses to end users.
+
+Following this license, all software will additionally be licensed under the license described above, though most of it (including all existing code) will continue to also be available under the two above licenses. Which license is used remains at the option of the user.
+
+Certain parts of the software may, instead, be licensed under either just the Lilium License, or the Lilium License or the GNU General Public License version 3, at the end user's option. Which option is used will be determined at a later time. The parts licensed in this manner will be parts that can be effectively used as a Technological Protection Measure.
+
+This section does not apply to Licensing of parts of Lilium other than the software implementations of Lilium provided by the Lilium Project. In particular, it doesn't apply to this repository, or to lilium-knums. It also doesn't apply to third-party reimplementations of Lilium.
 
 ## Security Considerations
 
